@@ -1,4 +1,9 @@
 const DEMO_MODE = true;
+const API_BASE_URL = 'https://campus-acadmic-resource-managament.onrender.com';
+
+function apiUrl(path) {
+    return `${API_BASE_URL}${path}`;
+}
 
 let allResources = [];
 let allCategories = [];
@@ -143,7 +148,7 @@ function setupCategoryCreation(user) {
                 result = mockCreateCategory(categoryName, user.id);
                 await delay(300);
             } else {
-                const response = await fetch('/api/categories', {
+                const response = await fetch(apiUrl('/api/categories'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -228,7 +233,7 @@ function setupUploadForm(user) {
             formData.set('category_id', categoryId);
             formData.append('user_id', user.id);
 
-            const response = await fetch('/api/upload', {
+            const response = await fetch(apiUrl('/api/upload'), {
                 method: 'POST',
                 body: formData
             });
@@ -270,9 +275,9 @@ async function loadDashboardData() {
             history = mockGetHistory(user.id);
         } else {
             const [resourcesResponse, myResourcesResponse, historyResponse] = await Promise.all([
-                fetch(`/api/resources?user_id=${encodeURIComponent(user.id)}`),
-                fetch(`/api/my-resources?user_id=${encodeURIComponent(user.id)}`),
-                fetch(`/api/history?user_id=${encodeURIComponent(user.id)}`)
+                fetch(apiUrl(`/api/resources?user_id=${encodeURIComponent(user.id)}`)),
+                fetch(apiUrl(`/api/my-resources?user_id=${encodeURIComponent(user.id)}`)),
+                fetch(apiUrl(`/api/history?user_id=${encodeURIComponent(user.id)}`))
             ]);
 
             allResourcesList = await resourcesResponse.json();
@@ -297,7 +302,7 @@ async function loadCategories() {
         if (DEMO_MODE) {
             allCategories = mockGetCategories();
         } else {
-            const response = await fetch('/api/categories');
+            const response = await fetch(apiUrl('/api/categories'));
             const categories = await response.json();
             allCategories = response.ok ? categories : [];
         }
@@ -606,7 +611,7 @@ async function deleteCategory(categoryId) {
             result = mockDeleteCategory(categoryId);
             await delay(250);
         } else {
-            const response = await fetch(`/api/categories/${categoryId}`, {
+            const response = await fetch(apiUrl(`/api/categories/${categoryId}`), {
                 method: 'DELETE'
             });
 
@@ -709,7 +714,7 @@ async function downloadResource(resourceId, resourceTitle) {
         }
     }
 
-    window.location.href = `/api/download/${resourceId}?user_id=${user.id}`;
+    window.location.href = apiUrl(`/api/download/${resourceId}?user_id=${user.id}`);
 }
 
 function viewResource(resourceId) {

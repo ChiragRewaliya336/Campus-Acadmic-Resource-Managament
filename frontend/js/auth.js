@@ -1,4 +1,9 @@
 const DEMO_MODE = true;
+const API_BASE_URL = 'https://campus-acadmic-resource-managament.onrender.com';
+
+function apiUrl(path) {
+    return `${API_BASE_URL}${path}`;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
@@ -29,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageDiv.textContent = registerResult.message;
                     }
                 } else {
-                    const response = await fetch('/api/auth/register', {
+                    const response = await fetch(apiUrl('/api/auth/register'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -87,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageDiv.textContent = 'Invalid email or password';
                     }
                 } else {
-                    const response = await fetch('/api/auth/login', {
+                    const response = await fetch(apiUrl('/api/auth/login'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

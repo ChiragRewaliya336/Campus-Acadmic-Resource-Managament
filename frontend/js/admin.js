@@ -1,4 +1,10 @@
 const DEMO_MODE = true;
+const API_BASE_URL = 'https://campus-acadmic-resource-managament.onrender.com';
+
+function apiUrl(path) {
+    return `${API_BASE_URL}${path}`;
+}
+
 let allAdminCategories = [];
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -103,9 +109,9 @@ async function loadAdminData() {
 
             await new Promise(resolve => setTimeout(resolve, 500));
         } else {
-            const resourcesResponse = await fetch('/api/admin/resources');
+            const resourcesResponse = await fetch(apiUrl('/api/admin/resources'));
             resources = await resourcesResponse.json();
-            const usersResponse = await fetch('/api/admin/users');
+            const usersResponse = await fetch(apiUrl('/api/admin/users'));
             users = await usersResponse.json();
         }
 
@@ -251,7 +257,7 @@ function setupAdminCategoryManagement(user) {
                 result = mockCreateCategory(categoryName, user.id);
                 await new Promise(resolve => setTimeout(resolve, 300));
             } else {
-                const response = await fetch('/api/categories', {
+                const response = await fetch(apiUrl('/api/categories'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -284,7 +290,7 @@ async function loadAdminCategories() {
         if (DEMO_MODE) {
             allAdminCategories = mockGetCategories();
         } else {
-            const response = await fetch('/api/categories');
+            const response = await fetch(apiUrl('/api/categories'));
             const categories = await response.json();
             allAdminCategories = response.ok ? categories : [];
         }
@@ -335,7 +341,7 @@ async function adminDeleteCategory(categoryId) {
             result = mockDeleteCategory(categoryId);
             await new Promise(resolve => setTimeout(resolve, 250));
         } else {
-            const response = await fetch(`/api/categories/${categoryId}`, {
+            const response = await fetch(apiUrl(`/api/categories/${categoryId}`), {
                 method: 'DELETE'
             });
 
@@ -376,7 +382,7 @@ async function approveResource(id) {
                 alert(result.message);
             }
         } else {
-            const response = await fetch(`/api/admin/resources/${id}/approve`, {
+            const response = await fetch(apiUrl(`/api/admin/resources/${id}/approve`), {
                 method: 'PUT'
             });
 
@@ -405,7 +411,7 @@ async function rejectResource(id) {
                 alert(result.message);
             }
         } else {
-            const response = await fetch(`/api/admin/resources/${id}/reject`, {
+            const response = await fetch(apiUrl(`/api/admin/resources/${id}/reject`), {
                 method: 'PUT'
             });
 
@@ -434,7 +440,7 @@ async function deleteResource(id) {
             alert('Resource deleted successfully');
             loadAdminData();
         } else {
-            const response = await fetch(`/api/admin/resources/${id}`, {
+            const response = await fetch(apiUrl(`/api/admin/resources/${id}`), {
                 method: 'DELETE'
             });
 
@@ -469,7 +475,7 @@ async function updateUserRole(userId) {
             result = mockUpdateUserRole(userId, newRole, currentUser.id);
             await new Promise(resolve => setTimeout(resolve, 400));
         } else {
-            const response = await fetch(`/api/admin/users/${userId}/role`, {
+            const response = await fetch(apiUrl(`/api/admin/users/${userId}/role`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -546,7 +552,7 @@ async function adminDownloadResource(resourceId, resourceTitle) {
         }
     }
 
-    window.location.href = `/api/download/${resourceId}?user_id=${user.id}`;
+    window.location.href = apiUrl(`/api/download/${resourceId}?user_id=${user.id}`);
 }
 
 function adminViewResource(resourceId) {
