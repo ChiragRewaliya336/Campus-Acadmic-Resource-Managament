@@ -1,7 +1,5 @@
 
-CREATE DATABASE IF NOT EXISTS campus_db;
-
-USE campus_db;
+USE railway;
 
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
