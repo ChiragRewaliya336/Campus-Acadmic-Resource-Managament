@@ -1,0 +1,24 @@
+LIVE PROJECT - Live project format
+
+Created by: Abhishek
+Status: Approved
+
+This is the live project format documentation for the ongoing development.
+
+Project Details:
+- Project Name: Campus Academic Resource Management
+- Version: 1.0.0
+- Status: Live
+- Framework: Express.js + MySQL
+
+Features:
+- User Authentication
+- Resource Management
+- Category Management
+- File Upload & Download
+- Admin Dashboard
+
+Technology Stack:
+- Backend: Node.js, Express.js
+- Database: MySQL
+- Frontend: HTML5, CSS3, JavaScript

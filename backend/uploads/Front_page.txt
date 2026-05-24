@@ -1,0 +1,14 @@
+Front page - AI ml Front page
+
+Created by: Abhishek
+Status: Approved
+
+This is the front page of the AI Machine Learning project documentation.
+
+Key Topics:
+- Machine Learning Fundamentals
+- AI Model Development
+- Frontend Implementation
+- User Interface Design
+
+This document serves as the gateway to understanding the complete AI ML Front page project.

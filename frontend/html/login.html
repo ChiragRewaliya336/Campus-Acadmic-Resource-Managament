@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Campus Academic Resource Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <div class="auth-page-brand">
+            <img src="../images/carm-logo.svg" alt="Campus Academic Resource Management logo" class="auth-logo">
+            <h1>Campus Academic Resource Management System</h1>
+        </div>
+    </header>
+    <main>
+        <div class="auth-container">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="register.html">Register here</a></p>
+            <div id="message"></div>
+        </div>
+    </main>
+    <script src="../js/mockData.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+</html>

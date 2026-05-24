@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Campus Academic Resource Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left navbar-brand">
+            <img src="../images/carm-logo.svg" alt="Campus Academic Resource Management logo" class="logo">
+            <span>Campus ARMS - Admin</span>
+        </div>
+        <div class="navbar-center">
+            <span id="username">Hello, Admin</span>
+        </div>
+        <div class="navbar-right">
+            <button id="logoutBtn" class="nav-btn logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <ul>
+                <li><a href="#" data-section="resources">All Resources</a></li>
+                <li><a href="#" data-section="categories">Categories</a></li>
+                <li><a href="#" data-section="roles">User Roles</a></li>
+                <li><a href="#" data-section="stats">Statistics</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <section id="resources" class="section active">
+                <h2>All Resources</h2>
+                <div class="search-container" style="margin-bottom: 20px;">
+                    <input type="text" id="adminSearchInput" placeholder="Search resources by title, category, or uploader...">
+                    <button id="adminSearchBtn">Search</button>
+                    <button id="adminClearSearchBtn">Clear</button>
+                </div>
+                <div id="resourcesTableContainer">
+                    <!-- Resources table will be loaded here -->
+                </div>
+            </section>
+
+            <section id="roles" class="section">
+                <h2>User Role Management</h2>
+                <div class="role-management-header">
+                    <p>New registrations are created as <strong>student</strong> by default. Admins can update trusted users here.</p>
+                </div>
+                <div id="roleManagementMessage" class="panel-message"></div>
+                <div id="usersTableContainer">
+                    <!-- Users table will be loaded here -->
+                </div>
+            </section>
+
+            <section id="categories" class="section">
+                <h2>Category Management</h2>
+                <div class="category-management-card">
+                    <h3>Create New Category</h3>
+                    <form id="adminCategoryForm" class="category-form">
+                        <div class="form-group">
+                            <label for="adminCategoryName">Category Name:</label>
+                            <input type="text" id="adminCategoryName" name="name" placeholder="Enter category name" required>
+                        </div>
+                        <button type="submit" class="category-create-btn">Create Category</button>
+                    </form>
+                    <div id="adminCategoryMessage" class="panel-message"></div>
+                </div>
+                <div class="subject-list-card">
+                    <h3>Existing Categories</h3>
+                    <div id="adminCategoriesOverview" class="subject-pill-list"></div>
+                </div>
+            </section>
+
+            <section id="stats" class="section">
+                <h2>System Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Resources</h3>
+                        <p id="totalResources">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Approved Resources</h3>
+                        <p id="approvedResources">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Resources</h3>
+                        <p id="pendingResources">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p id="totalUsers">0</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/mockData.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

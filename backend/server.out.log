@@ -1,0 +1,5 @@
+
+> campus-academic-resource-management-backend@1.0.0 start
+> node server/server.js
+
+Server running on http://localhost:3000

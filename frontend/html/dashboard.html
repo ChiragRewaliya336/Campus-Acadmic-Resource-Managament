@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Campus Academic Resource Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left navbar-brand">
+            <img src="../images/carm-logo.svg" alt="Campus Academic Resource Management logo" class="logo"> 
+            <span>CARM</span>
+        </div>
+        <div class="navbar-center">
+            <span id="username">Hello, Guest</span>
+        </div>
+        <div class="navbar-right">
+            <a id="adminLink" href="admin.html" class="nav-btn admin-btn" style="display: none;">Admin Panel</a>
+            <button id="logoutBtn" class="nav-btn logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <ul>
+                <li><a href="#" data-section="dashboard">Dashboard</a></li>
+                <li><a href="#" data-section="categories">Create Category</a></li>
+                <li><a href="#" data-section="upload">Upload</a></li>
+                <li><a href="#" data-section="resources">Resources</a></li>
+                <li><a href="#" data-section="my-files">My Files</a></li>
+                <li><a href="#" data-section="history">History</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <section id="dashboard" class="section active">
+                <h2>Welcome to Your Dashboard</h2>
+                <p id="welcomeMessage">Welcome back!</p>
+                <div class="role-overview-card">
+                    <div>
+                        <p class="role-overview-label">Current Role</p>
+                        <h3 id="currentUserRole">Student</h3>
+                    </div>
+                </div>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h3>Total Resources</h3>
+                        <p id="totalResources">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>My Files</h3>
+                        <p id="myFilesCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Recent Activity</h3>
+                        <p id="recentActivity">None</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="categories" class="section">
+                <h2>Create Subject Category</h2>
+                <div class="category-management-card">
+                    <h3>Add New Subject</h3>
+                    <p>Create subject categories like DBMS, Operating Systems, Java, or Networks. These subjects will appear in the resources section.</p>
+                    <form id="categoryForm" class="category-form">
+                        <div class="form-group">
+                            <label for="newCategoryName">Subject Name:</label>
+                            <input type="text" id="newCategoryName" name="name" placeholder="Enter subject name like DBMS" required>
+                        </div>
+                        <button type="submit" class="category-create-btn">Create Category</button>
+                    </form>
+                    <div id="categoryMessage" class="inline-message"></div>
+                </div>
+                <div class="subject-list-card">
+                    <h3>Available Subjects</h3>
+                    <div id="categoriesOverview" class="subject-pill-list">
+                        <!-- Subject pills will load here -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="upload" class="section">
+                <h2>Upload Resources</h2>
+                <form id="uploadForm">
+                    <div class="form-group">
+                        <label for="fileTitle">Title:</label>
+                        <input type="text" id="fileTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fileCategory">Category:</label>
+                        <select id="fileCategory" name="category_id" required>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fileDescription">Description:</label>
+                        <textarea id="fileDescription" name="description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="fileUpload">File:</label>
+                        <input type="file" id="fileUpload" name="file" required>
+                    </div>
+                    <button type="submit">Upload</button>
+                </form>
+                <div id="uploadMessage"></div>
+            </section>
+
+            <section id="resources" class="section">
+                <h2>Available Resources</h2>
+                <div class="resources-controls">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Search resources...">
+                        <button id="searchBtn">Search</button>
+                        <button id="refreshBtn">Refresh</button>
+                    </div>
+                    <div class="filter-container">
+                        <label for="categoryFilter">Filter by Category:</label>
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="categoryBrowser" class="subject-browser-grid">
+                    <!-- Categories will be loaded here -->
+                </div>
+                <div id="selectedCategoryPanel" class="selected-category-panel" style="display: none;">
+                    <div class="selected-category-header">
+                        <div>
+                            <p class="selected-category-label">Selected Subject</p>
+                            <h3 id="selectedCategoryTitle">DBMS</h3>
+                        </div>
+                        <button id="clearCategoryView" class="secondary-action-btn" type="button">Show All Subjects</button>
+                    </div>
+                    <div id="resourcesList" class="resources-grid">
+                        <!-- Resources will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="my-files" class="section">
+                <h2>My Files</h2>
+                <div id="myFilesList" class="resources-grid">
+                    <!-- User's files will be loaded here -->
+                </div>
+            </section>
+
+            <section id="history" class="section">
+                <h2>Activity History</h2>
+                <div id="historyList">
+                    <!-- History will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/mockData.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="70" x2="422" y2="442" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FAFF"/>
+      <stop offset="1" stop-color="#E4EDFF"/>
+    </linearGradient>
+    <linearGradient id="bookBlue" x1="152" y1="166" x2="325" y2="334" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A5D3FF"/>
+      <stop offset="1" stop-color="#3467B8"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="327" y1="164" x2="421" y2="310" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD261"/>
+      <stop offset="1" stop-color="#F2A900"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="256" cy="256" r="236" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="226" stroke="#D9E5FF" stroke-width="4"/>
+
+  <path d="M150 175C177 175 201 185 220 201V344C201 328 177 319 150 319V175Z" fill="url(#bookBlue)"/>
+  <path d="M292 175C265 175 241 185 222 201V344C241 328 265 319 292 319V175Z" fill="#8AC1F9"/>
+  <path d="M140 178V343C171 343 202 353 222 373C242 353 273 343 304 343V178C273 178 242 188 222 208C202 188 171 178 140 178Z" stroke="#244A89" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M222 207V372" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <path d="M154 285C179 285 199 291 217 304" stroke="white" stroke-opacity="0.8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M228 304C246 291 266 285 290 285" stroke="white" stroke-opacity="0.8" stroke-width="7" stroke-linecap="round"/>
+
+  <path d="M171 138L246 103L339 140L266 171L171 138Z" fill="#183A72"/>
+  <path d="M196 151V188C196 194 201 198 207 198H279C286 198 291 194 291 188V151L266 160L196 151Z" fill="#244A89"/>
+  <path d="M213 122L173 145V187" stroke="#F2B126" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="173" cy="187" r="10" fill="#FFD261"/>
+  <path d="M173 196L165 221C163 228 169 234 176 234C183 234 189 228 187 221L179 196H173Z" fill="#F2A900"/>
+
+  <rect x="314" y="262" width="28" height="74" rx="5" fill="url(#gold)"/>
+  <rect x="355" y="225" width="28" height="111" rx="5" fill="url(#gold)"/>
+  <rect x="396" y="184" width="28" height="152" rx="5" fill="url(#gold)"/>
+  <path d="M304 239L353 247L392 204L434 166" stroke="#F2A900" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="304" cy="239" r="10" fill="#F2A900"/>
+  <circle cx="353" cy="247" r="10" fill="#F2A900"/>
+  <circle cx="392" cy="204" r="10" fill="#F2A900"/>
+  <path d="M424 166H447V189" stroke="#F2A900" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
