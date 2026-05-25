@@ -2,15 +2,18 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const resourceController = require('../controllers/resourceController');
 const authController = require('../controllers/authController');
 const historyController = require('../controllers/historyController');
 const adminController = require('../controllers/adminController');
 const categoryController = require('../controllers/categoryController');
+const uploadsDir = path.join(__dirname, '../uploads/');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads/'));
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

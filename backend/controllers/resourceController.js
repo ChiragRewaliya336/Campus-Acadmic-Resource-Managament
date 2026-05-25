@@ -56,8 +56,14 @@ const uploadResource = async (req, res) => {
   }
 
   try {
-    const file_path = file.path;
+    const file_path = file.filename;
     const file_name = file.originalname;
+
+    console.log('Normalized upload path:', {
+      stored_file_path: file_path,
+      original_disk_path: file.path,
+      file_name
+    });
 
     const [result] = await db.promise().query(
       'INSERT INTO resources (title, description, category_id, file_path, file_name, user_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)',

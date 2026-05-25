@@ -19,9 +19,15 @@ function getStoredFileName(resource) {
 
 function resolveResourceFilePath(resource) {
   const candidates = [];
+  const storedPath = resource?.file_path ? String(resource.file_path) : '';
+  const normalizedStoredPath = storedPath.replace(/\\/g, '/');
 
-  if (resource.file_path) {
-    candidates.push(path.resolve(String(resource.file_path)));
+  if (normalizedStoredPath) {
+    if (!normalizedStoredPath.includes('/')) {
+      candidates.push(path.join(uploadsDir, normalizedStoredPath));
+    } else {
+      candidates.push(path.resolve(storedPath));
+    }
   }
 
   const storedFileName = getStoredFileName(resource);
