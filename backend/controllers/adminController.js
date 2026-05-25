@@ -65,12 +65,14 @@ const updateUserRole = async (req, res) => {
 
 const approveResource = async (req, res) => {
   const { id } = req.params;
+  console.log('Approve request id:', id);
 
   try {
     const [result] = await db.promise().query(
       'UPDATE resources SET status = ? WHERE id = ?',
       ['approved', id]
     );
+    console.log('Approve affected rows:', result.affectedRows);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Resource not found' });
     }
@@ -84,12 +86,14 @@ const approveResource = async (req, res) => {
 
 const rejectResource = async (req, res) => {
   const { id } = req.params;
+  console.log('Reject request id:', id);
 
   try {
     const [result] = await db.promise().query(
       'UPDATE resources SET status = ? WHERE id = ?',
       ['rejected', id]
     );
+    console.log('Reject affected rows:', result.affectedRows);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Resource not found' });
     }

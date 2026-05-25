@@ -214,7 +214,7 @@ function displayResourcesTable(resources) {
                         <tr>
                             <td>${r.title}</td>
                             <td>${r.category_name || r.category || r.category_id || 'Uncategorized'}</td>
-                            <td>${usersById[r.user_id]?.username || r.uploader_name || 'Unknown'}</td>
+                            <td>${r.uploaded_by_name || usersById[r.user_id]?.username || 'Unknown'}</td>
                             <td><span class="status-badge status-${r.status || 'pending'}">${r.status || 'pending'}</span></td>
                             <td>${new Date(r.created_at || r.uploaded_at).toLocaleDateString()}</td>
                             <td class="actions">
@@ -438,6 +438,7 @@ function showAdminMessage(message, isSuccess) {
 }
 
 async function approveResource(id) {
+    console.log('approveResource(id):', id, typeof id);
     try {
         if (DEMO_MODE) {
             const result = mockApproveResource(id);
@@ -467,6 +468,7 @@ async function approveResource(id) {
 }
 
 async function rejectResource(id) {
+    console.log('rejectResource(id):', id, typeof id);
     try {
         if (DEMO_MODE) {
             const result = mockRejectResource(id);
@@ -496,6 +498,7 @@ async function rejectResource(id) {
 }
 
 async function deleteResource(id) {
+    console.log('deleteResource(id):', id, typeof id);
     if (!confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
         return;
     }
@@ -507,13 +510,13 @@ async function deleteResource(id) {
             alert('Resource deleted successfully');
             loadAdminData();
         } else {
-            const response = await fetch(apiUrl(`/api/admin/resources/${id}`), {
+            const response = await fetchFresh(`/api/resources/${id}`, {
                 method: 'DELETE'
             });
 
             if (response.ok) {
                 alert('Resource deleted successfully');
-                loadAdminData();
+                await refreshAdminView();
             } else {
                 alert('Failed to delete resource');
             }
@@ -578,6 +581,9 @@ function escapeForAttribute(value) {
 
 async function adminDownloadResource(resourceId, resourceTitle) {
     const user = JSON.parse(localStorage.getItem('user'));
+    const resource = Array.isArray(window.allAdminResources)
+        ? window.allAdminResources.find(r => String(r.id) === String(resourceId))
+        : null;
     
     if (!user) {
         alert('Please login to download resources');
@@ -619,12 +625,45 @@ async function adminDownloadResource(resourceId, resourceTitle) {
         }
     }
 
-    window.location.href = apiUrl(`/api/download/${resourceId}?user_id=${user.id}`);
+    try {
+        const response = await fetch(apiUrl(`/api/download/${resourceId}?user_id=${encodeURIComponent(user.id)}`), {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Download failed. Please try again.';
+            try {
+                const errorResult = await response.json();
+                errorMessage = errorResult.message || errorResult.error || errorMessage;
+            } catch (error) {
+                // Ignore JSON parse errors.
+            }
+            alert(errorMessage);
+            return;
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const element = document.createElement('a');
+        element.href = downloadUrl;
+        element.download = resource?.file_name || `${resourceTitle}.txt`;
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
+    } catch (error) {
+        console.error('Admin download failed:', error);
+        alert('Download failed. Please try again.');
+    }
 }
 
 function adminViewResource(resourceId) {
     const normalizedId = String(resourceId);
-    const resource = getMockResources().find(r => String(r.id) === normalizedId);
+    const resource = DEMO_MODE
+        ? getMockResources().find(r => String(r.id) === normalizedId)
+        : (window.allAdminResources || []).find(r => String(r.id) === normalizedId);
     if (!resource) {
         alert('Resource not found');
         return;
@@ -689,7 +728,22 @@ function adminViewResource(resourceId) {
         }
     }
 
-    alert(`${details}${resource.file_content ? '\n\nFile content is available for demo resources via download.' : ''}`);
+    const fileName = resource.file_name || resource.title || 'resource';
+    const isDocFile = /\.(doc|docx)$/i.test(fileName);
+    const isPptFile = /\.(ppt|pptx)$/i.test(fileName);
+
+    if (isDocFile || isPptFile) {
+        alert('This DOC/DOCX/PPT/PPTX file cannot be previewed in the browser. Please download it first to view it.');
+        return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        alert('Please login to view resources');
+        return;
+    }
+
+    window.open(apiUrl(`/api/view/${resourceId}?user_id=${encodeURIComponent(user.id)}`), '_blank', 'noopener');
 }
 
 function dataUrlToBlob(dataUrl) {

@@ -45,6 +45,7 @@ router.post('/login', authController.login);
 router.get('/resources', resourceController.getResources);
 router.post('/upload', upload.single('file'), resourceController.uploadResource);
 router.get('/my-resources', resourceController.getMyResources);
+router.delete('/resources/:id', resourceController.deleteResource);
 
 router.post('/categories', categoryController.createCategory);
 router.get('/categories', categoryController.getCategories);
@@ -59,5 +60,6 @@ router.get('/admin/users', adminController.getAllUsers);
 router.put('/admin/users/:id/role', adminController.updateUserRole);
 router.put('/admin/resources/:id/approve', adminController.approveResource);
 router.put('/admin/resources/:id/reject', adminController.rejectResource);
+router.delete('/admin/resources/:id', resourceController.deleteResource);
 
 module.exports = router;

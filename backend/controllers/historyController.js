@@ -79,6 +79,9 @@ const viewFile = async (req, res) => {
 
     const resource = resources[0];
     const absolutePath = resolveResourceFilePath(resource);
+    console.log('View resource:', resource);
+    console.log('Resolved file path:', absolutePath);
+    console.log('File exists:', absolutePath ? fs.existsSync(absolutePath) : false);
 
     if (!absolutePath) {
       console.error('View file missing on server:', {
@@ -113,6 +116,9 @@ const downloadFile = async (req, res) => {
 
     const resource = resources[0];
     const absolutePath = resolveResourceFilePath(resource);
+    console.log('Download resource:', resource);
+    console.log('Resolved file path:', absolutePath);
+    console.log('File exists:', absolutePath ? fs.existsSync(absolutePath) : false);
 
     if (!absolutePath) {
       console.error('Download file missing on server:', {

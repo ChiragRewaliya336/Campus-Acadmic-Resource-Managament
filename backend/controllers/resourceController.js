@@ -1,5 +1,30 @@
 const db = require('../db/connection');
 const path = require('path');
+const fs = require('fs');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../uploads');
+
+function resolveStoredFilePath(resource) {
+  const storedPath = resource?.file_path ? String(resource.file_path) : '';
+  const normalizedStoredPath = storedPath.replace(/\\/g, '/');
+  const candidates = [];
+
+  if (normalizedStoredPath) {
+    if (!normalizedStoredPath.includes('/')) {
+      candidates.push(path.join(uploadsDir, normalizedStoredPath));
+    } else {
+      candidates.push(path.resolve(storedPath));
+      candidates.push(path.join(uploadsDir, path.basename(normalizedStoredPath)));
+    }
+  }
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
 
 const getResources = async (req, res) => {
   const { user_id } = req.query;
@@ -97,6 +122,47 @@ const uploadResource = async (req, res) => {
   }
 };
 
+const deleteResource = async (req, res) => {
+  const { id } = req.params;
+
+  console.log('Delete request id:', id);
+
+  try {
+    const [resources] = await db.promise().query(
+      'SELECT id, file_path, file_name FROM resources WHERE id = ?',
+      [id]
+    );
+
+    if (resources.length === 0) {
+      return res.status(404).json({ message: 'Resource not found' });
+    }
+
+    const resource = resources[0];
+    const resolvedPath = resolveStoredFilePath(resource);
+    console.log('Delete resource record:', resource);
+    console.log('Resolved file path:', resolvedPath);
+    console.log('File exists:', resolvedPath ? fs.existsSync(resolvedPath) : false);
+
+    const [result] = await db.promise().query(
+      'DELETE FROM resources WHERE id = ?',
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Resource not found' });
+    }
+
+    if (resolvedPath && fs.existsSync(resolvedPath)) {
+      fs.unlinkSync(resolvedPath);
+    }
+
+    res.json({ message: 'Resource deleted successfully' });
+  } catch (error) {
+    console.error('Delete resource error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 const getMyResources = async (req, res) => {
   const { user_id } = req.query;
 
@@ -127,4 +193,4 @@ const getMyResources = async (req, res) => {
   }
 };
 
-module.exports = { getResources, uploadResource, getMyResources };
+module.exports = { getResources, uploadResource, getMyResources, deleteResource };
