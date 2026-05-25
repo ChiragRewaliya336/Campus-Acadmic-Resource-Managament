@@ -1,6 +1,42 @@
 const db = require('../db/connection');
 const path = require('path');
 const fs = require('fs');
+const uploadsDir = path.join(__dirname, '../uploads');
+
+function getStoredFileName(resource) {
+  if (!resource) {
+    return '';
+  }
+
+  if (resource.file_path) {
+    const normalizedPath = String(resource.file_path).replace(/\\/g, '/');
+    const segments = normalizedPath.split('/');
+    return segments[segments.length - 1] || '';
+  }
+
+  return '';
+}
+
+function resolveResourceFilePath(resource) {
+  const candidates = [];
+
+  if (resource.file_path) {
+    candidates.push(path.resolve(String(resource.file_path)));
+  }
+
+  const storedFileName = getStoredFileName(resource);
+  if (storedFileName) {
+    candidates.push(path.join(uploadsDir, storedFileName));
+  }
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
 
 const getUserHistory = async (req, res) => {
   const { user_id } = req.query;
@@ -36,9 +72,14 @@ const viewFile = async (req, res) => {
     }
 
     const resource = resources[0];
-    const absolutePath = path.resolve(resource.file_path);
+    const absolutePath = resolveResourceFilePath(resource);
 
-    if (!fs.existsSync(absolutePath)) {
+    if (!absolutePath) {
+      console.error('View file missing on server:', {
+        resourceId: id,
+        file_path: resource.file_path,
+        file_name: resource.file_name
+      });
       return res.status(404).json({ message: 'File not found on server' });
     }
 
@@ -65,9 +106,14 @@ const downloadFile = async (req, res) => {
     }
 
     const resource = resources[0];
-    const absolutePath = path.resolve(resource.file_path);
+    const absolutePath = resolveResourceFilePath(resource);
 
-    if (!fs.existsSync(absolutePath)) {
+    if (!absolutePath) {
+      console.error('Download file missing on server:', {
+        resourceId: id,
+        file_path: resource.file_path,
+        file_name: resource.file_name
+      });
       return res.status(404).json({ message: 'File not found on server' });
     }
 

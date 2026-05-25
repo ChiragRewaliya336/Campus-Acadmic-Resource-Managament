@@ -786,7 +786,40 @@ async function downloadResource(resourceId, resourceTitle) {
         }
     }
 
-    window.location.href = apiUrl(`/api/download/${resourceId}?user_id=${encodeURIComponent(user.id)}`);
+    try {
+        const response = await fetch(apiUrl(`/api/download/${resourceId}?user_id=${encodeURIComponent(user.id)}`), {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Download failed. Please try again.';
+
+            try {
+                const errorResult = await response.json();
+                errorMessage = errorResult.message || errorResult.error || errorMessage;
+            } catch (error) {
+                // Ignore JSON parse issues and keep generic message.
+            }
+
+            alert(errorMessage);
+            return;
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const element = document.createElement('a');
+        element.href = downloadUrl;
+        element.download = getFileName(resource, resourceTitle);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
+    } catch (error) {
+        console.error('Download failed:', error);
+        alert('Download failed. Please try again.');
+    }
 }
 
 function viewResource(resourceId) {
