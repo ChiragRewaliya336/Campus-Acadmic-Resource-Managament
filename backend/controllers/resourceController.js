@@ -135,7 +135,7 @@ const deleteResource = async (req, res) => {
 
   try {
     const [resources] = await db.promise().query(
-      'SELECT id, file_path, file_name FROM resources WHERE id = ?',
+      'SELECT id, title, file_path, file_name FROM resources WHERE id = ?',
       [id]
     );
 
@@ -154,9 +154,14 @@ const deleteResource = async (req, res) => {
     if (actingUserId) {
       await db.promise().query(
         'INSERT INTO history (user_id, action, resource_id, file_name) VALUES (?, ?, ?, ?)',
-        [actingUserId, 'delete', id, resource.file_name]
+        [actingUserId, 'delete', null, resource.file_name || resource.title]
       );
     }
+
+    await db.promise().query(
+      'DELETE FROM history WHERE resource_id = ?',
+      [id]
+    );
 
     const [result] = await db.promise().query(
       'DELETE FROM resources WHERE id = ?',
