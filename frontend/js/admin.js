@@ -126,7 +126,7 @@ function filterAndDisplayResources(allResources, searchTerm) {
         resource.title.toLowerCase().includes(searchTerm) ||
         (resource.description || '').toLowerCase().includes(searchTerm) ||
         (resource.category_name || resource.category || '').toLowerCase().includes(searchTerm) ||
-        (getMockUsers()[resource.user_id]?.username || '').toLowerCase().includes(searchTerm)
+        (resource.uploaded_by_name || resource.uploader_name || '').toLowerCase().includes(searchTerm)
     );
 
     displayResourcesTable(filteredResources);
@@ -134,8 +134,8 @@ function filterAndDisplayResources(allResources, searchTerm) {
 
 async function loadAdminData() {
     try {
-        let resources;
-        let users;
+        let resources = null;
+        let users = [];
 
         if (DEMO_MODE) {
             // Ensure mock storage is initialized
@@ -146,17 +146,41 @@ async function loadAdminData() {
             await new Promise(resolve => setTimeout(resolve, 500));
         } else {
             const resourcesResponse = await fetchFresh('/api/admin/resources');
-            resources = await resourcesResponse.json();
+            const resourcesResult = await resourcesResponse.json();
+            console.log('Admin resources response:', {
+                ok: resourcesResponse.ok,
+                status: resourcesResponse.status,
+                body: resourcesResult
+            });
+            if (resourcesResponse.ok && Array.isArray(resourcesResult)) {
+                resources = resourcesResult;
+            }
+
             const usersResponse = await fetchFresh('/api/admin/users');
-            users = await usersResponse.json();
+            const usersResult = await usersResponse.json();
+            console.log('Admin users response:', {
+                ok: usersResponse.ok,
+                status: usersResponse.status,
+                body: usersResult
+            });
+            if (usersResponse.ok && Array.isArray(usersResult)) {
+                users = usersResult;
+            }
         }
 
-        // Store resources globally for search functionality
-        window.allAdminResources = resources;
+        if (Array.isArray(resources)) {
+            window.allAdminResources = resources;
+        }
 
-        displayResourcesTable(resources);
-        displayUsersTable(users, JSON.parse(localStorage.getItem('user')));
-        updateStatistics(resources, users);
+        const safeResources = Array.isArray(window.allAdminResources) ? window.allAdminResources : [];
+        const safeUsers = Array.isArray(users) ? users : [];
+
+        console.log('Admin resources:', safeResources);
+        console.log('Admin users:', safeUsers);
+
+        displayResourcesTable(safeResources);
+        displayUsersTable(safeUsers, JSON.parse(localStorage.getItem('user')));
+        updateStatistics(safeResources, safeUsers);
 
     } catch (error) {
         console.error('Error loading admin data:', error);
@@ -165,7 +189,12 @@ async function loadAdminData() {
 
 function displayResourcesTable(resources) {
     const container = document.getElementById('resourcesTableContainer');
-    const usersById = getMockUsers();
+    const usersById = DEMO_MODE ? getMockUsers() : {};
+
+    console.log('Rendering admin resources table:', {
+        count: resources.length,
+        resources
+    });
 
     if (resources.length > 0) {
         const tableHTML = `
@@ -184,16 +213,16 @@ function displayResourcesTable(resources) {
                     ${resources.map(r => `
                         <tr>
                             <td>${r.title}</td>
-                            <td>${r.category_name || r.category || 'Uncategorized'}</td>
+                            <td>${r.category_name || r.category || r.category_id || 'Uncategorized'}</td>
                             <td>${usersById[r.user_id]?.username || r.uploader_name || 'Unknown'}</td>
-                            <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+                            <td><span class="status-badge status-${r.status || 'pending'}">${r.status || 'pending'}</span></td>
                             <td>${new Date(r.created_at || r.uploaded_at).toLocaleDateString()}</td>
                             <td class="actions">
                                 <button class="view-btn" onclick="adminViewResource(${r.id})">View</button>
-                                ${r.status === 'pending' ?
+                                ${(r.status || 'pending') === 'pending' ?
                                     `<button class="approve-btn" onclick="approveResource(${r.id})">Approve</button>
                                      <button class="reject-btn" onclick="rejectResource(${r.id})">Reject</button>` :
-                                    r.status === 'approved' ?
+                                    (r.status || 'pending') === 'approved' ?
                                     `<button class="reject-btn" onclick="rejectResource(${r.id})">Reject</button>
                                      <button class="download-btn" onclick="adminDownloadResource(${r.id}, '${escapeForAttribute(r.title)}')">Download</button>` :
                                     `<button class="approve-btn" onclick="approveResource(${r.id})">Approve</button>`
@@ -206,8 +235,10 @@ function displayResourcesTable(resources) {
             </table>
         `;
         container.innerHTML = tableHTML;
+        console.log('Admin resource rows appended to DOM:', resources.length);
     } else {
         container.innerHTML = '<p>No resources found.</p>';
+        console.warn('Admin resources table is empty.');
     }
 }
 

@@ -51,6 +51,8 @@ router.get('/history', historyController.getUserHistory);
 router.get('/download/:id', historyController.downloadFile);
 
 router.get('/admin/resources', adminController.getAllResources);
+router.get('/admin/users', adminController.getAllUsers);
+router.put('/admin/users/:id/role', adminController.updateUserRole);
 router.put('/admin/resources/:id/approve', adminController.approveResource);
 router.put('/admin/resources/:id/reject', adminController.rejectResource);
 
