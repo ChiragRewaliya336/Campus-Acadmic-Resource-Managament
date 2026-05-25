@@ -14,7 +14,7 @@ let currentUserRole = 'student';
 document.addEventListener('DOMContentLoaded', async function() {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
-        window.location.href = 'login.html';
+        window.location.href = '/html/login.html';
         return;
     }
 
@@ -55,7 +55,7 @@ function setupLogout() {
 
     logoutBtn.addEventListener('click', function() {
         localStorage.removeItem('user');
-        window.location.href = 'index.html';
+        window.location.href = '/';
     });
 }
 

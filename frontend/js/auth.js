@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageDiv.textContent = registerResult.message;
                         registerForm.reset();
                         setTimeout(() => {
-                            window.location.href = 'login.html';
+                            window.location.href = '/html/login.html';
                         }, 2000);
                     } else {
                         messageDiv.style.color = 'red';
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageDiv.textContent = result.message;
                         registerForm.reset();
                         setTimeout(() => {
-                            window.location.href = 'login.html';
+                            window.location.href = '/html/login.html';
                         }, 2000);
                     } else {
                         messageDiv.style.color = 'red';
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem('user', JSON.stringify(loginResult.user));
                         localStorage.setItem('isLoggedIn', 'true');
                         setTimeout(() => {
-                            window.location.href = 'dashboard.html';
+                            window.location.href = '/html/dashboard.html';
                         }, 2000);
                     } else {
                         messageDiv.style.color = 'red';
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageDiv.textContent = result.message;
                         localStorage.setItem('user', JSON.stringify(result.user));
                         setTimeout(() => {
-                            window.location.href = 'dashboard.html';
+                            window.location.href = '/html/dashboard.html';
                         }, 2000);
                     } else {
                         messageDiv.style.color = 'red';

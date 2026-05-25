@@ -10,13 +10,13 @@ let allAdminCategories = [];
 document.addEventListener('DOMContentLoaded', function() {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
-        window.location.href = 'login.html';
+        window.location.href = '/html/login.html';
         return;
     }
 
     if (user.role !== 'admin') {
         alert('Access denied. Admin privileges required.');
-        window.location.href = 'dashboard.html';
+        window.location.href = '/html/dashboard.html';
         return;
     }
 
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('logoutBtn').addEventListener('click', function() {
         localStorage.removeItem('user');
-        window.location.href = 'index.html';
+        window.location.href = '/';
     });
 
     const sidebarLinks = document.querySelectorAll('.sidebar a');
