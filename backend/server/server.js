@@ -4,6 +4,7 @@ const path = require('path');
 const db = require('../db/connection');
 const app = express();
 const port = process.env.PORT || 3000;
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../uploads');
 
 const allowedOrigins = [
   'https://campus-acadmic-resource-managament.vercel.app',
@@ -33,7 +34,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(path.join(__dirname, '../../frontend')));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(uploadsDir));
 
 const apiRoutes = require('../routes/index');
 app.use('/api', apiRoutes);

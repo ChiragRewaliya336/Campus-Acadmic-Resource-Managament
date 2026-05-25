@@ -8,7 +8,7 @@ const authController = require('../controllers/authController');
 const historyController = require('../controllers/historyController');
 const adminController = require('../controllers/adminController');
 const categoryController = require('../controllers/categoryController');
-const uploadsDir = path.join(__dirname, '../uploads/');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../uploads/');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
