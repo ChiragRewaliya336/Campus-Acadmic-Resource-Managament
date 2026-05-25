@@ -1,8 +1,22 @@
-const DEMO_MODE = true;
+const DEMO_MODE = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 const API_BASE_URL = 'https://campus-acadmic-resource-managament.onrender.com';
+const AUTO_REFRESH_INTERVAL_MS = 15000;
+let dashboardRefreshHandle = null;
+let dashboardRefreshInFlight = false;
 
 function apiUrl(path) {
     return `${API_BASE_URL}${path}`;
+}
+
+function getCurrentUser() {
+    return JSON.parse(localStorage.getItem('user'));
+}
+
+async function fetchFresh(path, options = {}) {
+    return fetch(apiUrl(path), {
+        cache: 'no-store',
+        ...options
+    });
 }
 
 let allResources = [];
@@ -12,7 +26,7 @@ let selectedCategoryName = '';
 let currentUserRole = 'student';
 
 document.addEventListener('DOMContentLoaded', async function() {
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = getCurrentUser();
     if (!user) {
         window.location.href = '/html/login.html';
         return;
@@ -26,11 +40,43 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupCategoryCreation(user);
     setupUploadForm(user);
 
-    await loadDashboardData();
+    await refreshDashboardView();
+    startDashboardAutoRefresh();
 
     // Setup search after data is loaded
     setupSearchAndFilters();
 });
+
+async function refreshDashboardView() {
+    const user = getCurrentUser();
+    if (!user) {
+        return;
+    }
+
+    await loadCategories();
+    const { myResources } = await loadResources(user.id);
+    const history = await loadHistory(user.id);
+    await loadDashboard(user.id, myResources, history);
+}
+
+function startDashboardAutoRefresh() {
+    if (dashboardRefreshHandle) {
+        return;
+    }
+
+    dashboardRefreshHandle = window.setInterval(async () => {
+        if (document.hidden || dashboardRefreshInFlight) {
+            return;
+        }
+
+        dashboardRefreshInFlight = true;
+        try {
+            await refreshDashboardView();
+        } finally {
+            dashboardRefreshInFlight = false;
+        }
+    }, AUTO_REFRESH_INTERVAL_MS);
+}
 
 function updateUserHeader(user) {
     const usernameEl = document.getElementById('username');
@@ -225,7 +271,7 @@ function setupUploadForm(user) {
                     currentFileInput.parentNode.replaceChild(newFileInput, currentFileInput);
                 }
                 await delay(500);
-                await loadDashboardData();
+                await refreshDashboardView();
                 return;
             }
 
@@ -233,7 +279,7 @@ function setupUploadForm(user) {
             formData.set('category_id', categoryId);
             formData.append('user_id', user.id);
 
-            const response = await fetch(apiUrl('/api/upload'), {
+            const response = await fetchFresh('/api/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -250,7 +296,7 @@ function setupUploadForm(user) {
                     const newFileInput = fileInput.cloneNode(true);
                     fileInput.parentNode.replaceChild(newFileInput, fileInput);
                 }
-                await loadDashboardData();
+                await refreshDashboardView();
             } else {
                 showInlineMessage(uploadMessage, result.error || 'Upload failed. Please try again.', false);
             }
@@ -261,40 +307,49 @@ function setupUploadForm(user) {
 }
 
 async function loadDashboardData() {
-    const user = JSON.parse(localStorage.getItem('user'));
+    await refreshDashboardView();
+}
 
-    try {
-        await loadCategories();
+async function loadResources(userId) {
+    let myResources;
 
-        let myResources;
-        let history;
+    if (DEMO_MODE) {
+        allResourcesList = getMockResources();
+        myResources = allResourcesList.filter(resource => String(resource.user_id) === String(userId));
+    } else {
+        const [resourcesResponse, myResourcesResponse] = await Promise.all([
+            fetchFresh(`/api/resources?user_id=${encodeURIComponent(userId)}`),
+            fetchFresh(`/api/my-resources?user_id=${encodeURIComponent(userId)}`)
+        ]);
 
-        if (DEMO_MODE) {
-            allResourcesList = getMockResources();
-            myResources = allResourcesList.filter(resource => String(resource.user_id) === String(user.id));
-            history = mockGetHistory(user.id);
-        } else {
-            const [resourcesResponse, myResourcesResponse, historyResponse] = await Promise.all([
-                fetch(apiUrl(`/api/resources?user_id=${encodeURIComponent(user.id)}`)),
-                fetch(apiUrl(`/api/my-resources?user_id=${encodeURIComponent(user.id)}`)),
-                fetch(apiUrl(`/api/history?user_id=${encodeURIComponent(user.id)}`))
-            ]);
-
-            allResourcesList = await resourcesResponse.json();
-            myResources = await myResourcesResponse.json();
-            history = await historyResponse.json();
-        }
-
-        allResources = allResourcesList.filter(resource => resource.status === 'approved');
-
-        updateDashboardStats(allResources, myResources, history);
-        renderCategoriesOverview(allCategories);
-        renderResourceExplorer(allResources, document.getElementById('searchInput')?.value || '', document.getElementById('categoryFilter')?.value || selectedCategoryName);
-        displayMyFiles(myResources);
-        displayHistory(history);
-    } catch (error) {
-        console.error('Error loading dashboard data:', error);
+        allResourcesList = await resourcesResponse.json();
+        myResources = await myResourcesResponse.json();
     }
+
+    allResources = allResourcesList.filter(resource => resource.status === 'approved');
+    renderCategoriesOverview(allCategories);
+    renderResourceExplorer(allResources, document.getElementById('searchInput')?.value || '', document.getElementById('categoryFilter')?.value || selectedCategoryName);
+    displayMyFiles(myResources);
+
+    return { myResources };
+}
+
+async function loadHistory(userId) {
+    let history;
+
+    if (DEMO_MODE) {
+        history = mockGetHistory(userId);
+    } else {
+        const historyResponse = await fetchFresh(`/api/history?user_id=${encodeURIComponent(userId)}`);
+        history = await historyResponse.json();
+    }
+
+    displayHistory(history);
+    return history;
+}
+
+async function loadDashboard(userId, myResources, history) {
+    updateDashboardStats(allResources, myResources, history);
 }
 
 async function loadCategories() {
@@ -302,7 +357,7 @@ async function loadCategories() {
         if (DEMO_MODE) {
             allCategories = mockGetCategories();
         } else {
-            const response = await fetch(apiUrl('/api/categories'));
+            const response = await fetchFresh('/api/categories');
             const categories = await response.json();
             allCategories = response.ok ? categories : [];
         }

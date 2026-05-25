@@ -1,8 +1,18 @@
-const DEMO_MODE = true;
+const DEMO_MODE = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 const API_BASE_URL = 'https://campus-acadmic-resource-managament.onrender.com';
+const AUTO_REFRESH_INTERVAL_MS = 15000;
+let adminRefreshHandle = null;
+let adminRefreshInFlight = false;
 
 function apiUrl(path) {
     return `${API_BASE_URL}${path}`;
+}
+
+async function fetchFresh(path, options = {}) {
+    return fetch(apiUrl(path), {
+        cache: 'no-store',
+        ...options
+    });
 }
 
 let allAdminCategories = [];
@@ -45,13 +55,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelector('.sidebar a[data-section="resources"]').classList.add('active');
 
-    loadAdminData();
-    loadAdminCategories();
+    refreshAdminView();
     setupAdminCategoryManagement(user);
+    startAdminAutoRefresh();
 
     // Setup admin search functionality after data is loaded
     setupAdminSearch();
 });
+
+async function refreshAdminView() {
+    await Promise.all([
+        loadAdminData(),
+        loadAdminCategories()
+    ]);
+}
+
+function startAdminAutoRefresh() {
+    if (adminRefreshHandle) {
+        return;
+    }
+
+    adminRefreshHandle = window.setInterval(async () => {
+        if (document.hidden || adminRefreshInFlight) {
+            return;
+        }
+
+        adminRefreshInFlight = true;
+        try {
+            await refreshAdminView();
+        } finally {
+            adminRefreshInFlight = false;
+        }
+    }, AUTO_REFRESH_INTERVAL_MS);
+}
 
 function setupAdminSearch() {
     const searchInput = document.getElementById('adminSearchInput');
@@ -109,9 +145,9 @@ async function loadAdminData() {
 
             await new Promise(resolve => setTimeout(resolve, 500));
         } else {
-            const resourcesResponse = await fetch(apiUrl('/api/admin/resources'));
+            const resourcesResponse = await fetchFresh('/api/admin/resources');
             resources = await resourcesResponse.json();
-            const usersResponse = await fetch(apiUrl('/api/admin/users'));
+            const usersResponse = await fetchFresh('/api/admin/users');
             users = await usersResponse.json();
         }
 
@@ -290,7 +326,7 @@ async function loadAdminCategories() {
         if (DEMO_MODE) {
             allAdminCategories = mockGetCategories();
         } else {
-            const response = await fetch(apiUrl('/api/categories'));
+            const response = await fetchFresh('/api/categories');
             const categories = await response.json();
             allAdminCategories = response.ok ? categories : [];
         }
@@ -377,18 +413,18 @@ async function approveResource(id) {
             if (result.success) {
                 alert(result.message);
                 await new Promise(resolve => setTimeout(resolve, 500));
-                loadAdminData();
+                await refreshAdminView();
             } else {
                 alert(result.message);
             }
         } else {
-            const response = await fetch(apiUrl(`/api/admin/resources/${id}/approve`), {
+            const response = await fetchFresh(`/api/admin/resources/${id}/approve`, {
                 method: 'PUT'
             });
 
             if (response.ok) {
                 alert('Resource approved successfully');
-                loadAdminData();
+                await refreshAdminView();
             } else {
                 alert('Failed to approve resource');
             }
@@ -406,18 +442,18 @@ async function rejectResource(id) {
             if (result.success) {
                 alert(result.message);
                 await new Promise(resolve => setTimeout(resolve, 500));
-                loadAdminData();
+                await refreshAdminView();
             } else {
                 alert(result.message);
             }
         } else {
-            const response = await fetch(apiUrl(`/api/admin/resources/${id}/reject`), {
+            const response = await fetchFresh(`/api/admin/resources/${id}/reject`, {
                 method: 'PUT'
             });
 
             if (response.ok) {
                 alert('Resource rejected successfully');
-                loadAdminData();
+                await refreshAdminView();
             } else {
                 alert('Failed to reject resource');
             }

@@ -1,4 +1,4 @@
-const DEMO_MODE = true;
+const DEMO_MODE = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 const API_BASE_URL = 'https://campus-acadmic-resource-managament.onrender.com';
 
 function apiUrl(path) {
