@@ -48,6 +48,7 @@ router.get('/categories', categoryController.getCategories);
 router.delete('/categories/:id', categoryController.deleteCategory);
 
 router.get('/history', historyController.getUserHistory);
+router.get('/view/:id', historyController.viewFile);
 router.get('/download/:id', historyController.downloadFile);
 
 router.get('/admin/resources', adminController.getAllResources);

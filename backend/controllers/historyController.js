@@ -21,6 +21,35 @@ const getUserHistory = async (req, res) => {
   }
 };
 
+const viewFile = async (req, res) => {
+  const { id } = req.params;
+  const { user_id } = req.query;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'User ID required' });
+  }
+
+  try {
+    const [resources] = await db.promise().query('SELECT * FROM resources WHERE id = ?', [id]);
+    if (resources.length === 0) {
+      return res.status(404).json({ message: 'Resource not found' });
+    }
+
+    const resource = resources[0];
+    const absolutePath = path.resolve(resource.file_path);
+
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json({ message: 'File not found on server' });
+    }
+
+    res.setHeader('Content-Disposition', `inline; filename="${resource.file_name}"`);
+    return res.sendFile(absolutePath);
+  } catch (error) {
+    console.error('View file error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 const downloadFile = async (req, res) => {
   const { id } = req.params;
   const { user_id } = req.query;
@@ -36,6 +65,11 @@ const downloadFile = async (req, res) => {
     }
 
     const resource = resources[0];
+    const absolutePath = path.resolve(resource.file_path);
+
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json({ message: 'File not found on server' });
+    }
 
     // Log download
     await db.promise().query(
@@ -44,11 +78,11 @@ const downloadFile = async (req, res) => {
     );
 
     // Send file
-    res.download(resource.file_path, resource.file_name);
+    res.download(absolutePath, resource.file_name);
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-module.exports = { getUserHistory, downloadFile };
+module.exports = { getUserHistory, viewFile, downloadFile };

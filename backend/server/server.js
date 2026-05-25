@@ -33,7 +33,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(path.join(__dirname, '../../frontend')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 const apiRoutes = require('../routes/index');
 app.use('/api', apiRoutes);

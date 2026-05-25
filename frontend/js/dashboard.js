@@ -721,24 +721,41 @@ function getResourceById(resourceId) {
     if (DEMO_MODE) {
         return getMockResources().find(resource => String(resource.id) === normalizedId);
     }
-    return allResources.find(resource => String(resource.id) === normalizedId);
+    return allResourcesList.find(resource => String(resource.id) === normalizedId);
+}
+
+function getFileName(resource, fallbackTitle = 'resource') {
+    return resource.file_name || `${fallbackTitle}.txt`;
+}
+
+function isOfficeDocument(fileName) {
+    return /\.(doc|docx|ppt|pptx)$/i.test(fileName);
+}
+
+function isBrowserPreviewable(fileName, fileType = '') {
+    return (
+        /^image\//i.test(fileType) ||
+        /^text\//i.test(fileType) ||
+        /^(application\/pdf|application\/json)$/i.test(fileType) ||
+        /\.(pdf|txt|md|json|js|css|html|csv|png|jpg|jpeg|gif|webp|svg)$/i.test(fileName)
+    );
 }
 
 async function downloadResource(resourceId, resourceTitle) {
     const user = JSON.parse(localStorage.getItem('user'));
+    const resource = getResourceById(resourceId);
     
     if (!user) {
         alert('Please login to download resources');
         return;
     }
 
-    if (DEMO_MODE) {
-        const resource = getResourceById(resourceId);
-        if (!resource) {
-            alert('Resource not found');
-            return;
-        }
+    if (!resource) {
+        alert('Resource not found');
+        return;
+    }
 
+    if (DEMO_MODE) {
         if (resource.file_content) {
             const content = resource.file_content;
             const element = document.createElement('a');
@@ -769,7 +786,7 @@ async function downloadResource(resourceId, resourceTitle) {
         }
     }
 
-    window.location.href = apiUrl(`/api/download/${resourceId}?user_id=${user.id}`);
+    window.location.href = apiUrl(`/api/download/${resourceId}?user_id=${encodeURIComponent(user.id)}`);
 }
 
 function viewResource(resourceId) {
@@ -780,13 +797,13 @@ function viewResource(resourceId) {
     }
 
     const details = `Title: ${resource.title}\nCategory: ${resource.category_name || resource.category || 'Uncategorized'}\nStatus: ${resource.status}\nDescription: ${resource.description || 'No description'}\nUpload Date: ${resource.created_at || resource.uploaded_at}`;
+    const fileName = getFileName(resource, resource.title);
+    const isDocFile = /\.(doc|docx)$/i.test(fileName);
+    const isPptFile = /\.(ppt|pptx)$/i.test(fileName);
 
     if (DEMO_MODE && resource.file_content) {
         const content = resource.file_content;
         const isDataUrl = typeof content === 'string' && content.startsWith('data:');
-        const fileName = resource.file_name || '';
-        const isDocFile = /\.(doc|docx)$/i.test(fileName);
-        const isPptFile = /\.(ppt|pptx)$/i.test(fileName);
 
         if (isDataUrl) {
             const blob = dataUrlToBlob(content);
@@ -839,7 +856,24 @@ function viewResource(resourceId) {
         }
     }
 
-    alert(`${details}${resource.file_content ? '\n\nFile content is available for demo resources via download.' : ''}`);
+    if (isDocFile || isPptFile) {
+        alert('This DOC/DOCX/PPT/PPTX file cannot be previewed in the browser. Please download it first to view it.');
+        return;
+    }
+
+    if (isBrowserPreviewable(fileName, resource.file_type || '')) {
+        const user = getCurrentUser();
+        if (!user) {
+            alert('Please login to view resources');
+            return;
+        }
+
+        const viewUrl = apiUrl(`/api/view/${resourceId}?user_id=${encodeURIComponent(user.id)}`);
+        window.open(viewUrl, '_blank', 'noopener');
+        return;
+    }
+
+    alert('Preview is not available for this file type. Please download the file to view it.');
 }
 
 function dataUrlToBlob(dataUrl) {
