@@ -65,6 +65,7 @@ const updateUserRole = async (req, res) => {
 
 const approveResource = async (req, res) => {
   const { id } = req.params;
+  const actingUserId = req.body?.user_id;
   console.log('Approve request id:', id);
 
   try {
@@ -76,6 +77,19 @@ const approveResource = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Resource not found' });
     }
+
+    const [resources] = await db.promise().query(
+      'SELECT file_name FROM resources WHERE id = ?',
+      [id]
+    );
+
+    if (actingUserId && resources.length > 0) {
+      await db.promise().query(
+        'INSERT INTO history (user_id, action, resource_id, file_name) VALUES (?, ?, ?, ?)',
+        [actingUserId, 'approve', id, resources[0].file_name]
+      );
+    }
+
     console.log('Resource approved:', { id });
     res.json({ message: 'Resource approved' });
   } catch (error) {
@@ -86,6 +100,7 @@ const approveResource = async (req, res) => {
 
 const rejectResource = async (req, res) => {
   const { id } = req.params;
+  const actingUserId = req.body?.user_id;
   console.log('Reject request id:', id);
 
   try {
@@ -97,6 +112,19 @@ const rejectResource = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Resource not found' });
     }
+
+    const [resources] = await db.promise().query(
+      'SELECT file_name FROM resources WHERE id = ?',
+      [id]
+    );
+
+    if (actingUserId && resources.length > 0) {
+      await db.promise().query(
+        'INSERT INTO history (user_id, action, resource_id, file_name) VALUES (?, ?, ?, ?)',
+        [actingUserId, 'reject', id, resources[0].file_name]
+      );
+    }
+
     console.log('Resource rejected:', { id });
     res.json({ message: 'Resource rejected' });
   } catch (error) {

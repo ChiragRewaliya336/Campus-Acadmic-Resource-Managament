@@ -1,7 +1,7 @@
 const db = require('../db/connection');
 const path = require('path');
 const fs = require('fs');
-const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../uploads');
+const uploadsDir = path.resolve(process.env.UPLOADS_DIR || path.join(__dirname, '../uploads'));
 
 function getStoredFileName(resource) {
   if (!resource) {
@@ -45,17 +45,30 @@ function resolveResourceFilePath(resource) {
 }
 
 const getUserHistory = async (req, res) => {
-  const { user_id } = req.query;
+  const { user_id, role } = req.query;
 
-  if (!user_id) {
+  if (!user_id && role !== 'admin') {
     return res.status(400).json({ message: 'User ID required' });
   }
 
   try {
-    const [history] = await db.promise().query(
-      'SELECT h.*, r.title as resource_title FROM history h LEFT JOIN resources r ON h.resource_id = r.id WHERE h.user_id = ? ORDER BY h.created_at DESC',
-      [user_id]
-    );
+    let query = `
+      SELECT
+        h.*,
+        r.title AS resource_title
+      FROM history h
+      LEFT JOIN resources r ON h.resource_id = r.id
+    `;
+    const params = [];
+
+    if (role !== 'admin') {
+      query += ' WHERE h.user_id = ?';
+      params.push(user_id);
+    }
+
+    query += ' ORDER BY h.created_at DESC';
+
+    const [history] = await db.promise().query(query, params);
     res.json(history);
   } catch (error) {
     console.error('Get history error:', error);
@@ -104,6 +117,8 @@ const downloadFile = async (req, res) => {
   const { id } = req.params;
   const { user_id } = req.query;
 
+  console.log('Download request id:', id);
+
   if (!user_id) {
     return res.status(400).json({ message: 'User ID required' });
   }
@@ -116,9 +131,10 @@ const downloadFile = async (req, res) => {
 
     const resource = resources[0];
     const absolutePath = resolveResourceFilePath(resource);
+    console.log('Resource DB row:', resource);
     console.log('Download resource:', resource);
     console.log('Resolved file path:', absolutePath);
-    console.log('File exists:', absolutePath ? fs.existsSync(absolutePath) : false);
+    console.log('Exists:', absolutePath ? fs.existsSync(absolutePath) : false);
 
     if (!absolutePath) {
       console.error('Download file missing on server:', {

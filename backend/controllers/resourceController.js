@@ -1,7 +1,7 @@
 const db = require('../db/connection');
 const path = require('path');
 const fs = require('fs');
-const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../uploads');
+const uploadsDir = path.resolve(process.env.UPLOADS_DIR || path.join(__dirname, '../uploads'));
 
 function resolveStoredFilePath(resource) {
   const storedPath = resource?.file_path ? String(resource.file_path) : '';
@@ -95,6 +95,11 @@ const uploadResource = async (req, res) => {
       [title, description, category_id, file_path, file_name, user_id, 'pending']
     );
 
+    await db.promise().query(
+      'INSERT INTO history (user_id, action, resource_id, file_name) VALUES (?, ?, ?, ?)',
+      [user_id, 'upload', result.insertId, file_name]
+    );
+
     const [insertedRows] = await db.promise().query(
       `
         SELECT
@@ -124,6 +129,7 @@ const uploadResource = async (req, res) => {
 
 const deleteResource = async (req, res) => {
   const { id } = req.params;
+  const actingUserId = req.query.user_id || req.body?.user_id;
 
   console.log('Delete request id:', id);
 
@@ -138,15 +144,25 @@ const deleteResource = async (req, res) => {
     }
 
     const resource = resources[0];
+    console.log('Found resource:', resource);
+    console.log('Deleting file path:', resource.file_path);
     const resolvedPath = resolveStoredFilePath(resource);
     console.log('Delete resource record:', resource);
     console.log('Resolved file path:', resolvedPath);
     console.log('File exists:', resolvedPath ? fs.existsSync(resolvedPath) : false);
 
+    if (actingUserId) {
+      await db.promise().query(
+        'INSERT INTO history (user_id, action, resource_id, file_name) VALUES (?, ?, ?, ?)',
+        [actingUserId, 'delete', id, resource.file_name]
+      );
+    }
+
     const [result] = await db.promise().query(
       'DELETE FROM resources WHERE id = ?',
       [id]
     );
+    console.log('Delete DB result:', result);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Resource not found' });

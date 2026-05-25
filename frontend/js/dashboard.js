@@ -347,7 +347,8 @@ async function loadHistory(userId) {
     if (DEMO_MODE) {
         history = mockGetHistory(userId);
     } else {
-        const historyResponse = await fetchFresh(`/api/history?user_id=${encodeURIComponent(userId)}`);
+        const user = getCurrentUser();
+        const historyResponse = await fetchFresh(`/api/history?user_id=${encodeURIComponent(userId)}&role=${encodeURIComponent(user?.role || 'student')}`);
         history = await historyResponse.json();
     }
 
@@ -604,7 +605,7 @@ function displayResources(resources, searchTerm = '', categoryFilter = '') {
                 </div>
                 <p class="resource-description">${resource.description || 'No description'}</p>
                 <div class="resource-footer">
-                    <span class="uploader">${resource.uploader_name ? `By ${resource.uploader_name}` : 'Approved resource'}</span>
+                    <span class="uploader">${resource.uploaded_by_name ? `By ${resource.uploaded_by_name}` : 'Approved resource'}</span>
                     <div class="file-actions">
                         <button class="view-btn" onclick="viewResource(${resource.id})">View</button>
                         ${resource.status === 'approved' ? `<button class="download-btn" onclick="downloadResource(${resource.id}, '${escapeForAttribute(resource.title)}')">Download</button>` : ''}

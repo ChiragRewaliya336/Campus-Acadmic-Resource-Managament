@@ -439,6 +439,7 @@ function showAdminMessage(message, isSuccess) {
 
 async function approveResource(id) {
     console.log('approveResource(id):', id, typeof id);
+    const user = JSON.parse(localStorage.getItem('user'));
     try {
         if (DEMO_MODE) {
             const result = mockApproveResource(id);
@@ -451,7 +452,11 @@ async function approveResource(id) {
             }
         } else {
             const response = await fetchFresh(`/api/admin/resources/${id}/approve`, {
-                method: 'PUT'
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id: user?.id })
             });
 
             if (response.ok) {
@@ -469,6 +474,7 @@ async function approveResource(id) {
 
 async function rejectResource(id) {
     console.log('rejectResource(id):', id, typeof id);
+    const user = JSON.parse(localStorage.getItem('user'));
     try {
         if (DEMO_MODE) {
             const result = mockRejectResource(id);
@@ -481,7 +487,11 @@ async function rejectResource(id) {
             }
         } else {
             const response = await fetchFresh(`/api/admin/resources/${id}/reject`, {
-                method: 'PUT'
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id: user?.id })
             });
 
             if (response.ok) {
@@ -499,6 +509,7 @@ async function rejectResource(id) {
 
 async function deleteResource(id) {
     console.log('deleteResource(id):', id, typeof id);
+    const user = JSON.parse(localStorage.getItem('user'));
     if (!confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
         return;
     }
@@ -508,9 +519,9 @@ async function deleteResource(id) {
             const resources = getMockResources().filter(resource => resource.id !== id);
             saveMockResources(resources);
             alert('Resource deleted successfully');
-            loadAdminData();
+            await refreshAdminView();
         } else {
-            const response = await fetchFresh(`/api/resources/${id}`, {
+            const response = await fetchFresh(`/api/resources/${id}?user_id=${encodeURIComponent(user?.id || '')}`, {
                 method: 'DELETE'
             });
 

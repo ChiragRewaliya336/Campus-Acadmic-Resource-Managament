@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const db = require('../db/connection');
 const app = express();
 const port = process.env.PORT || 3000;
-const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../uploads');
+const uploadsDir = path.resolve(process.env.UPLOADS_DIR || path.join(__dirname, '../uploads'));
 
 const allowedOrigins = [
   'https://campus-acadmic-resource-managament.vercel.app',
@@ -33,6 +34,7 @@ app.use((req, res, next) => {
   });
   next();
 });
+fs.mkdirSync(uploadsDir, { recursive: true });
 app.use(express.static(path.join(__dirname, '../../frontend')));
 app.use('/uploads', express.static(uploadsDir));
 
@@ -45,5 +47,6 @@ app.get('/', (req, res) => {
 
 // Start server
 app.listen(port, () => {
+  console.log(`Uploads directory: ${uploadsDir}`);
   console.log(`Server running on http://localhost:${port}`);
 });
