@@ -322,8 +322,15 @@ async function loadResources(userId) {
             fetchFresh(`/api/my-resources?user_id=${encodeURIComponent(userId)}`)
         ]);
 
-        allResourcesList = await resourcesResponse.json();
+        const publicResources = await resourcesResponse.json();
         myResources = await myResourcesResponse.json();
+        const resourcesById = new Map();
+
+        [...publicResources, ...myResources].forEach(resource => {
+            resourcesById.set(String(resource.id), resource);
+        });
+
+        allResourcesList = Array.from(resourcesById.values());
     }
 
     allResources = allResourcesList.filter(resource => resource.status === 'approved');
